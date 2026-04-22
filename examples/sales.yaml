@@ -1,0 +1,21 @@
+name: sales-cleanup
+extract:
+  type: csv
+  path: examples/data/raw_sales.csv
+transforms:
+  - type: drop_nulls
+    columns: [order_id, cust, amt]
+  - type: rename_columns
+    mapping:
+      cust: customer_id
+      amt: amount
+  - type: derive_column
+    name: total
+    expr: "amount * quantity"
+  - type: deduplicate
+    subset: [order_id]
+load:
+  type: sqlite
+  path: output/sales.sqlite
+  table: sales_clean
+  if_exists: replace
