@@ -17,21 +17,25 @@ Most ETL jobs start as a one-off script and calcify into something nobody wants 
 
 ## Quick start
 
+Run these commands from the repository root. The packages live in `src/`, so add it to Python’s import path:
+
 ```bash
 # from the project root
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+export PYTHONPATH="$PWD/src"
 python -m etl run examples/sales.yaml
 ```
 
 Expected output:
 
 ```
-[extract] read 100 rows from examples/data/raw_sales.csv
-[transform] drop_nulls      → 98 rows (-2)
-[transform] rename_columns  → 98 rows
-[transform] derive_column   → 98 rows (added total)
-[transform] deduplicate     → 96 rows (-2)
-[load] wrote 96 rows to output/sales.sqlite :: sales_clean
+pipeline: sales-cleanup
+  [extract] 0 → 10 (+10)
+  [transform::drop_nulls] 10 → 8 (-2)
+  [transform::rename_columns] 8 → 8 (+0)
+  [transform::derive_column] 8 → 8 (+0)
+  [transform::deduplicate] 8 → 8 (+0)
+  loaded: 8
 ```
 
 ## Example config
@@ -44,7 +48,7 @@ extract:
   path: examples/data/raw_sales.csv
 transforms:
   - type: drop_nulls
-    columns: [order_id, customer_id]
+    columns: [order_id, cust, amt]
   - type: rename_columns
     mapping: { cust: customer_id, amt: amount }
   - type: derive_column
@@ -83,7 +87,7 @@ etl-pipeline/
 ## Running the tests
 
 ```bash
-pytest -q
+PYTHONPATH=src python -m pytest -q
 ```
 
 ## Extending
